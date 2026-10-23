@@ -7,6 +7,10 @@
 
 using namespace std;
 
+// Criterios de ordenamiento
+#define NIVEL 1
+#define NOTAS 2
+
 // Una composicion creada por un alumno de la escuela
 struct Composicion {
     int id;
@@ -21,12 +25,42 @@ struct Composicion {
 // Cuenta cuantas notas tiene una melodia (cada palabra es una nota)
 int contarNotas(string melodia) {
     int cont = 0;
-    for (int i = 0; i < melodia.size(); i++) {
+    int n = melodia.size();
+    for (int i = 0; i < n; i++) {
         if (melodia[i] != ' ' && (i == 0 || melodia[i - 1] == ' ')) {
             cont++;
         }
     }
     return cont;
+}
+
+// Regresa true si la palabra es una de las 7 notas
+bool esNota(string palabra) {
+    return palabra == "Do" || palabra == "Re" || palabra == "Mi" ||
+           palabra == "Fa" || palabra == "Sol" || palabra == "La" ||
+           palabra == "Si";
+}
+
+// Regresa true si la melodia tiene al menos una nota y todas son validas
+bool melodiaValida(string melodia) {
+    string palabra = "";
+    int notas = 0;
+    melodia = melodia + " ";
+    int n = melodia.size();
+    for (int i = 0; i < n; i++) {
+        if (melodia[i] == ' ') {
+            if (palabra != "") {
+                if (!esNota(palabra)) {
+                    return false;
+                }
+                notas++;
+                palabra = "";
+            }
+        } else {
+            palabra = palabra + melodia[i];
+        }
+    }
+    return notas > 0;
 }
 
 // Crea una composicion y calcula su numero de notas
@@ -50,9 +84,8 @@ string nombreNivel(int nivel) {
 }
 
 // Regresa true si "a" debe ir antes que "b"
-// criterio 1 = por nivel, criterio 2 = por numero de notas
 bool vaAntes(const Composicion &a, const Composicion &b, int criterio) {
-    if (criterio == 1) {
+    if (criterio == NIVEL) {
         return a.nivel <= b.nivel;
     }
     return a.numNotas <= b.numNotas;
@@ -71,8 +104,10 @@ void mezclar(vector<Composicion> &lista, int inicio, int medio, int fin, int cri
     }
 
     int i = 0, j = 0, k = inicio;
+    int nIzq = izq.size();
+    int nDer = der.size();
 
-    while (i < izq.size() && j < der.size()) {
+    while (i < nIzq && j < nDer) {
         if (vaAntes(izq[i], der[j], criterio)) {
             lista[k] = izq[i];
             i++;
@@ -84,12 +119,12 @@ void mezclar(vector<Composicion> &lista, int inicio, int medio, int fin, int cri
     }
 
     // Copiar lo que haya sobrado de alguna mitad
-    while (i < izq.size()) {
+    while (i < nIzq) {
         lista[k] = izq[i];
         i++;
         k++;
     }
-    while (j < der.size()) {
+    while (j < nDer) {
         lista[k] = der[j];
         j++;
         k++;
@@ -106,16 +141,21 @@ void mergeSort(vector<Composicion> &lista, int inicio, int fin, int criterio) {
     }
 }
 
+void mostrarComposicion(const Composicion &c) {
+    cout << "ID: " << c.id
+         << " | " << c.titulo
+         << " | Alumno: " << c.alumno
+         << " | " << c.instrumento
+         << " | Nivel: " << nombreNivel(c.nivel)
+         << " | Notas: " << c.numNotas << endl;
+    cout << "   Melodia: " << c.melodia << endl;
+}
+
 void mostrarComposiciones(const vector<Composicion> &lista) {
     cout << "\n----- Composiciones de la escuela -----\n";
-    for (int i = 0; i < lista.size(); i++) {
-        cout << "ID: " << lista[i].id
-             << " | " << lista[i].titulo
-             << " | Alumno: " << lista[i].alumno
-             << " | " << lista[i].instrumento
-             << " | Nivel: " << nombreNivel(lista[i].nivel)
-             << " | Notas: " << lista[i].numNotas << endl;
-        cout << "   Melodia: " << lista[i].melodia << endl;
+    int n = lista.size();
+    for (int i = 0; i < n; i++) {
+        mostrarComposicion(lista[i]);
     }
     cout << "---------------------------------------\n";
 }
